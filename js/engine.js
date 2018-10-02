@@ -33,6 +33,7 @@ let Engine = (function(global) {
 
     let isRunning = true;
 
+
     /* Esta função age como o ponto de largada do loop do jogo em si e
      * lida com as chamadas dos métodos render e update de forma adequada.
      */
@@ -103,6 +104,20 @@ let Engine = (function(global) {
         player.update();
     }
 
+    function renderGameStatus(){
+        ctx.textAlign = "start";
+        ctx.font = '20pt Impact';
+        ctx.strokeStyle = "white";
+        ctx.strokeText("HP: " + player.hp, 0, 30);
+        ctx.fillText("HP: " + player.hp, 0, 30);
+
+        ctx.textAlign = "end";
+        ctx.strokeText("SCORE: " + player.score, canvas.width, 30);
+        ctx.fillText("SCORE: " + player.score, canvas.width, 30);
+
+
+    }
+
     function checkCollisions(){
         allEnemies.forEach(function (enemy){
             if(enemy.posY === player.posY){
@@ -115,7 +130,6 @@ let Engine = (function(global) {
                         // gameOverAnimation();
                         
                     }
-                    
                 }
             }
         });
@@ -185,6 +199,7 @@ let Engine = (function(global) {
         });
 
         player.render();
+        renderGameStatus();
     }
 
     /* Esta função não faz nada, mas pode ser um bom local para lidar com os
@@ -205,7 +220,8 @@ let Engine = (function(global) {
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
-        'images/enemy-bug.png',
+        'images/enemy-bug-l.png',
+        'images/enemy-bug-r.png',
         'images/char-boy.png',
         'images/char-cat-girl.png',
         'images/char-horn-girl.png',

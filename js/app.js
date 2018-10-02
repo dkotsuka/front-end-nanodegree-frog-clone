@@ -3,26 +3,32 @@ const STEP_Y = 83;
 
 class Enemy {
     constructor(lv){
-        this.sprite = 'images/enemy-bug.png';
-        this.setLevel(lv);
+        
+        this.level = 1000;
         this.setValues();
     }
 
-    setLevel(lv){
-        this.level = lv * 100;
-    }
-
     update(dt){
-        if(this.posX > STEP_X * 6){
+        if(this.posX > STEP_X * 7 ||
+            this.posX < STEP_X * -3){
             this.setValues();
         }
         this.posX += this.speed * dt;
     }
 
     setValues(){
-        this.posX = -2 * STEP_X;
+        
         this.posY = 50 + ( Math.floor((Math.random() * 100) % 3) * STEP_Y );
-        this.speed = this.level + Math.random()* 500;
+        if(this.posY === 50 + STEP_Y ){
+            this.sprite = 'images/enemy-bug-l.png';
+            this.posX = 6 * STEP_X;
+            this.direction = -1;
+        } else {
+            this.sprite = 'images/enemy-bug-r.png';
+            this.posX = -2 * STEP_X;
+            this.direction = 1;
+        }        
+        this.speed = (this.level + Math.random()* 500) * this.direction;
     }
     
     render(){
@@ -34,6 +40,7 @@ class Player{
     constructor(sprite){
         this.sprite = sprite;
         this.hp = 5;
+        this.score = 0;
         this.toStartPos();
     }
 
@@ -55,16 +62,12 @@ class Player{
         }
     }
 
-    winAnimation(){
-        
+    winAnimation(dt){
+
     }
 
     render(){
         ctx.drawImage(Resources.get(this.sprite), this.posX, this.posY);
-        ctx.font = '20pt Impact';
-        ctx.strokeStyle = "white";
-        ctx.strokeText("HP: " + this.hp, 0, 30);
-        ctx.fillText("HP: " + this.hp, 0, 30);
     }
 
     handleInput(pressedKey){
@@ -82,6 +85,9 @@ class Player{
             case "up":
                 if(this.y >= 1 ){
                     this.y -= 1;
+                } else {
+                    this.score +=1;
+                    this.toStartPos();
                 }
                 break;
             case "down":
@@ -95,11 +101,17 @@ class Player{
 
 }
 
-const createEnemies = function (num, lv){
+function createEnemies(num, lv){
     for(let i = 0; i < num; i++){
         allEnemies.push(new Enemy(lv));
     }
-} 
+}
+
+function enemiesLevelUp(){
+    allEnemies.forEach(function(enemy){
+        enemy.level += 100;
+    });
+}
 
 const heroSprite = [
     'images/char-boy.png',
@@ -109,12 +121,9 @@ const heroSprite = [
     'images/char-princess-girl.png'
 ];
 
-
-
 const player = new Player(heroSprite[1]);
 const allEnemies = [];
 createEnemies(3,10);
-
 
 document.addEventListener('keydown', function(e) {
     const allowedKeys = {
