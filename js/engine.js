@@ -15,23 +15,32 @@
  * do canvas, a fim de escrever app.js mais simples de lidar.
  */
 
-let Engine = (function(global) {
+const Engine = (function(global) {
     /* Pré-defina as variáveis que usaremos neste escopo,
      * crie o elemento canvas, pegue o contexto 2D desse
      * canvas, configure a altura/largura dos elementos do
      * canvas e adicione isso ao DOM.
      */
-    let doc = global.document,
+    const doc = global.document,
         win = global.window,
         canvas = doc.createElement('canvas'),
-        ctx = canvas.getContext('2d'),
-        lastTime;
+        ctx = canvas.getContext('2d');
+    let lastTime,
+        bestOfAll = 0,
+        newRecordText = "",
+        isRunning = true;
 
     canvas.width = 505;
     canvas.height = 606;
     doc.body.appendChild(canvas);
 
-    let isRunning = true;
+    document.addEventListener('keydown', function(e) {
+        if (e.key === " " || e.key === "SpaceBar"){
+            if(!isRunning){
+                chooseHero();
+            }
+        }
+    });
 
 
     /* Esta função age como o ponto de largada do loop do jogo em si e
@@ -53,7 +62,7 @@ let Engine = (function(global) {
          */
         update(dt);
         render();
-
+        
         /* Defina a variável lastTime, que será usada para definir o delta
          * de tempo na próxima vez em que essa função for chamada.
          */
@@ -62,7 +71,52 @@ let Engine = (function(global) {
         /* Use a função requestAnimationFrame do navegador para chamar essa
          * função novamente quando o navegador puder desenhar outro frame.
          */
-        win.requestAnimationFrame(main);
+        if(isRunning){
+            win.requestAnimationFrame(main);
+        } else {
+            gameOverScreen();
+        }
+        
+    }
+
+    function chooseHero(){
+        const heroSprite = [
+            'images/char-boy.png',
+            'images/char-cat-girl.png',
+            'images/char-horn-girl.png',
+            'images/char-pink-girl.png',
+            'images/char-princess-girl.png'
+        ];
+        isRunning = true;
+
+        const gradient=ctx.createLinearGradient(0,0,0,canvas.height);
+        gradient.addColorStop("0.2","rgb(82, 106, 213)");
+        gradient.addColorStop("0.5","rgb(210, 210, 200)");
+        gradient.addColorStop("0.6","rgb(210, 210, 200)");
+        gradient.addColorStop("0.8","rgb(95, 193, 72)");
+
+
+        (function chooseLoop(){
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0,50,canvas.width,canvas.height-100);
+
+            selector.render();
+    
+            heroSprite.forEach((sprite, index) => {
+                ctx.drawImage(Resources.get(sprite), index * 101, 2 * 83);
+            });
+
+            showText("SELECT YOUR PLAYER", canvas.width/2, 150, "center", 24,"yellow", "black");
+    
+            if(selector.isReady){
+                createPlayer(heroSprite[selector.selected]);
+                init();
+            } else {
+                win.requestAnimationFrame(chooseLoop);
+            }
+        })();
     }
 
     /* Esta função faz algumas configurações iniciais que só devem ocorrer
@@ -105,17 +159,23 @@ let Engine = (function(global) {
     }
 
     function renderGameStatus(){
-        ctx.textAlign = "start";
-        ctx.font = '20pt Impact';
-        ctx.strokeStyle = "white";
-        ctx.strokeText("HP: " + player.hp, 0, 30);
-        ctx.fillText("HP: " + player.hp, 0, 30);
+        let hpPosX = 0;
+        for(let i = 0; i < player.hp; i++){
+            showText("\u2665", hpPosX, 30, "start", 30,"red", "pink");
+            hpPosX += 30;
+        }
+        showText("SCORE: " + player.score, canvas.width/2, 30, "center", 20);
+        showText("BEST: " + bestOfAll, canvas.width-5, 28, "end", 14,"yellow","black");
+    }
 
-        ctx.textAlign = "end";
-        ctx.strokeText("SCORE: " + player.score, canvas.width, 30);
-        ctx.fillText("SCORE: " + player.score, canvas.width, 30);
-
-
+    function showText(text, tPosX, tPosY, tAlign, tFontSize, tFillStyle = "black", tStrokeStyle = "white"){
+        ctx.textAlign = tAlign;
+        ctx.lineWidth = 2;
+        ctx.font = tFontSize + "pt impact";
+        ctx.strokeStyle = tStrokeStyle;
+        ctx.fillStyle = tFillStyle;
+        ctx.strokeText(text, tPosX, tPosY);
+        ctx.fillText(text, tPosX, tPosY);
     }
 
     function checkCollisions(){
@@ -127,19 +187,37 @@ let Engine = (function(global) {
                         player.gotHit();
                         player.toStartPos();
                     } else {
-                        // gameOverAnimation();
-                        
+                        if(player.score > bestOfAll){
+                            bestOfAll = player.score;
+                            newRecordText = "NEW RECORD!"
+                        }
+                        isRunning = false;
                     }
                 }
             }
         });
     }
 
-    // function gameOverAnimation(){
-    //     let screenShot = ctx.getImageData(0,0,canvas.width, canvas.height).data;
-    //     console.log(screenShot);
-    //     ctx.putImageData(screenShot, 0, 0);
-    // }
+    function gameOverScreen(){
+        const imageData = ctx.getImageData(0,0,canvas.width, canvas.height);
+        const numPixels = imageData.data.length / 4;
+        for (let i = 0; i < numPixels; i++) {
+            const value =(imageData.data[i * 4] + 
+                imageData.data[i * 4 + 1] + 
+                imageData.data[i * 4 + 2]) / 3;
+            if(value < 255){
+                imageData.data[i * 4] = value;
+                imageData.data[i * 4 + 1] = value;
+                imageData.data[i * 4 + 2] = value;
+            } 
+        }
+        ctx.putImageData(imageData,0,0);
+
+        showText("GAME OVER", canvas.width/2, canvas.height/2, "center", 50);
+        showText("PRESS *SPACE* TO RESTART", canvas.width/2, canvas.height/2 + 30,"center", 20,"red");
+
+        showText(newRecordText, canvas.width/2, canvas.height/2 + 90,"center", 20,"yellow", "black");
+    }
 
     /* Esta função primeiro deseha o "nível do jogo" e, depois, chama a
      * função renderEntities. Lembre-se de que esta função é chamada a
@@ -208,7 +286,11 @@ let Engine = (function(global) {
      * método init().
      */
     function reset() {
-        // noop
+        player.reset();
+        resetEnemies();
+        selector.isReady = false;
+        recordText = "";
+        isRunning = true;
     }
 
     /* Vá em frente e carregue todas as imagens que sabemos que serão
@@ -226,9 +308,10 @@ let Engine = (function(global) {
         'images/char-cat-girl.png',
         'images/char-horn-girl.png',
         'images/char-pink-girl.png',
-        'images/char-princess-girl.png'
+        'images/char-princess-girl.png',
+        'images/Selector.png'
     ]);
-    Resources.onReady(init);
+    Resources.onReady(chooseHero);
 
     /* Aloque o objeto context do canvas na variável global (o objeto
      * window quando executado em um navegador) para que desenvolvedores

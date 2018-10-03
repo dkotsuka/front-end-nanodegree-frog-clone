@@ -1,11 +1,44 @@
 const STEP_X = 101;
 const STEP_Y = 83;
 
+class Selector {
+    constructor(){
+        this.selectorSprite = 'images/Selector.png';
+        this.selected = 2;
+        this.isReady = false;
+    }
+
+    handleInput(pressedKey){
+        switch(pressedKey){
+            case "left":
+                if(this.selected > 0){
+                    this.selected -= 1;
+                }
+                break;
+            case "right":
+                if(this.selected < 4){
+                    this.selected += 1;
+                }
+                break;
+            case "enter":
+                this.isReady = true;
+                break;
+            default: 
+        }
+    }
+
+    render(){
+        ctx.drawImage(Resources.get(this.selectorSprite), this.selected * 101, 2 * 83);
+    }
+
+
+}
+
 class Enemy {
-    constructor(lv){
-        
-        this.level = 1000;
+    constructor(){      
+        this.level = 100;
         this.setValues();
+        this.levelUp = false;
     }
 
     update(dt){
@@ -18,8 +51,8 @@ class Enemy {
 
     setValues(){
         
-        this.posY = 50 + ( Math.floor((Math.random() * 100) % 3) * STEP_Y );
-        if(this.posY === 50 + STEP_Y ){
+        this.posY = randomNumber(3) * STEP_Y + 50;
+        if(this.posY === STEP_Y + 50 ){
             this.sprite = 'images/enemy-bug-l.png';
             this.posX = 6 * STEP_X;
             this.direction = -1;
@@ -28,7 +61,7 @@ class Enemy {
             this.posX = -2 * STEP_X;
             this.direction = 1;
         }        
-        this.speed = (this.level + Math.random()* 500) * this.direction;
+        this.speed = (this.level + randomNumber(100)) * this.direction;
     }
     
     render(){
@@ -39,14 +72,18 @@ class Enemy {
 class Player{
     constructor(sprite){
         this.sprite = sprite;
-        this.hp = 5;
-        this.score = 0;
-        this.toStartPos();
+        this.reset();
     }
 
     toStartPos(){
         this.x = 2;
         this.y = 5;
+    }
+
+    reset(){
+        this.hp = 5;
+        this.score = 0;
+        this.toStartPos();
     }
 
     update(){
@@ -57,13 +94,7 @@ class Player{
     gotHit(){
         if(this.hp > 0){
             this.hp -= 1; 
-        } else {
-            //game over
         }
-    }
-
-    winAnimation(dt){
-
     }
 
     render(){
@@ -87,6 +118,10 @@ class Player{
                     this.y -= 1;
                 } else {
                     this.score +=1;
+                    if(this.score > 0 &&
+                        this.score % 5 === 0){
+                        increaseEnemyLevel();
+                    }
                     this.toStartPos();
                 }
                 break;
@@ -94,44 +129,62 @@ class Player{
                 if(this.y < 5){
                     this.y += 1;
                 }
-                break
+                break;
             default: 
         }
     }
 
 }
 
-function createEnemies(num, lv){
+function createEnemies(num){
     for(let i = 0; i < num; i++){
-        allEnemies.push(new Enemy(lv));
+        allEnemies.push(new Enemy);
     }
 }
 
-function enemiesLevelUp(){
+function increaseEnemyLevel(){
     allEnemies.forEach(function(enemy){
-        enemy.level += 100;
+        enemy.level += 50;        
     });
 }
 
-const heroSprite = [
-    'images/char-boy.png',
-    'images/char-cat-girl.png',
-    'images/char-horn-girl.png',
-    'images/char-pink-girl.png',
-    'images/char-princess-girl.png'
-];
+function resetEnemies(){
+    allEnemies.forEach(function(enemy){
+        enemy.level = 100;
+    });
+}
 
-const player = new Player(heroSprite[1]);
+function createPlayer(sprite){
+    player = new Player(sprite);
+
+    document.addEventListener('keydown', function(e) {
+        const allowedKeys = {
+            "ArrowLeft": 'left',
+            "ArrowUp": 'up',
+            "ArrowRight": 'right',
+            "ArrowDown": 'down'
+        };
+    
+        player.handleInput(allowedKeys[e.key]);
+    });
+}
+
+function randomNumber(num){
+    return Math.floor((Math.random() * 100) % num);
+}
+
+let selector = new Selector;
+let player;
 const allEnemies = [];
-createEnemies(3,10);
+createEnemies(3,1);
+
+
 
 document.addEventListener('keydown', function(e) {
     const allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
+        "ArrowLeft": 'left',
+        "ArrowRight": 'right',
+        "Enter": 'enter'
     };
-
-    player.handleInput(allowedKeys[e.keyCode]);
+    selector.handleInput(allowedKeys[e.key]);
 });
