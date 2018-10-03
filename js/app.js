@@ -70,8 +70,7 @@ class Enemy {
 }
 
 class Player{
-    constructor(sprite){
-        this.sprite = sprite;
+    constructor(){
         this.reset();
     }
 
@@ -116,6 +115,7 @@ class Player{
             case "up":
                 if(this.y >= 1 ){
                     this.y -= 1;
+                    console.log("up");
                 } else {
                     this.score +=1;
                     if(this.score > 0 &&
@@ -155,18 +155,7 @@ function resetEnemies(){
 }
 
 function createPlayer(sprite){
-    player = new Player(sprite);
-
-    document.addEventListener('keyup', function(e) {
-        const allowedKeys = {
-            "ArrowLeft": 'left',
-            "ArrowUp": 'up',
-            "ArrowRight": 'right',
-            "ArrowDown": 'down'
-        };
-    
-        player.handleInput(allowedKeys[e.key]);
-    });
+    player.sprite = sprite;
 }
 
 function randomNumber(num){
@@ -174,11 +163,20 @@ function randomNumber(num){
 }
 
 let selector = new Selector;
-let player;
+let player = new Player;
 const allEnemies = [];
 createEnemies(3,1);
 
+document.addEventListener('keyup', function(e) {
+    const allowedKeys = {
+        "ArrowLeft": 'left',
+        "ArrowUp": 'up',
+        "ArrowRight": 'right',
+        "ArrowDown": 'down'
+    };
 
+    player.handleInput(allowedKeys[e.key]);
+});
 
 document.addEventListener('keyup', function(e) {
     const allowedKeys = {
