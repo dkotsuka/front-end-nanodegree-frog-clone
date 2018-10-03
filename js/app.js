@@ -157,7 +157,7 @@ function resetEnemies(){
 function createPlayer(sprite){
     player = new Player(sprite);
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keyup', function(e) {
         const allowedKeys = {
             "ArrowLeft": 'left',
             "ArrowUp": 'up',
@@ -180,7 +180,7 @@ createEnemies(3,1);
 
 
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keyup', function(e) {
     const allowedKeys = {
         "ArrowLeft": 'left',
         "ArrowRight": 'right',

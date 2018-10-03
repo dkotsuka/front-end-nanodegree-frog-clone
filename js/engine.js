@@ -34,7 +34,7 @@ const Engine = (function(global) {
     canvas.height = 606;
     doc.body.appendChild(canvas);
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keyup', function(e) {
         if (e.key === " " || e.key === "SpaceBar"){
             if(!isRunning){
                 chooseHero();
