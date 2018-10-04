@@ -13,8 +13,8 @@ const Engine = (function(global) {
     canvas.height = 606;
     doc.body.appendChild(canvas);
 
-    if(localStorage.getItem("lastname")){
-        bestOfAll = localStorage.getItem("lastname");
+    if(localStorage.getItem("bestScore")){
+        bestOfAll = localStorage.getItem("bestScore");
     }
 
     document.addEventListener('keyup', function(e) {
