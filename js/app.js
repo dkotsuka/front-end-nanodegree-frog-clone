@@ -7,7 +7,6 @@ class Selector {
         this.selected = 2;
         this.isReady = false;
     }
-
     handleInput(pressedKey){
         switch(pressedKey){
             case "left":
@@ -26,17 +25,13 @@ class Selector {
             default: 
         }
     }
-
     render(){
         ctx.drawImage(Resources.get(this.selectorSprite), this.selected * 101, 2 * 83);
     }
-
-
 }
 
 class Enemy {
     constructor(){      
-        this.level = 100;
         this.setValues();
         this.levelUp = false;
     }
@@ -49,8 +44,7 @@ class Enemy {
         this.posX += this.speed * dt;
     }
 
-    setValues(){
-        
+    setValues(){      
         this.posY = randomNumber(3) * STEP_Y + 50;
         if(this.posY === STEP_Y + 50 ){
             this.sprite = 'images/enemy-bug-l.png';
@@ -61,7 +55,7 @@ class Enemy {
             this.posX = -2 * STEP_X;
             this.direction = 1;
         }        
-        this.speed = (this.level + randomNumber(100)) * this.direction;
+        this.speed = (player.level * 100 + randomNumber(100)) * this.direction;
     }
     
     render(){
@@ -72,6 +66,7 @@ class Enemy {
 class Player{
     constructor(){
         this.reset();
+        this.level = 1;
     }
 
     toStartPos(){
@@ -82,6 +77,7 @@ class Player{
     reset(){
         this.hp = 5;
         this.score = 0;
+        this.level = 1;
         this.toStartPos();
     }
 
@@ -115,14 +111,11 @@ class Player{
             case "up":
                 if(this.y >= 1 ){
                     this.y -= 1;
-                    console.log("up");
                 } else {
                     this.score +=1;
-                    if(this.score > 0 &&
-                        this.score % 5 === 0){
-                        increaseEnemyLevel();
-                    }
+                    this.level = 1 + Math.floor(this.score / 20);
                     this.toStartPos();
+                    gem.setValues();
                 }
                 break;
             case "down":
@@ -136,16 +129,44 @@ class Player{
 
 }
 
+class Gem {
+    constructor(){
+        this.setValues();
+    }
+    setValues(){
+        const rand = randomNumber(100);
+        if(rand < 50){
+            this.sprite = 'images/gem-blue.png';
+            this.value = 1;
+        } else if(rand > 90) {
+            this.sprite = 'images/gem-orange.png';
+            this.value = 10;
+        } else {
+            this.sprite = 'images/gem-green.png';
+            this.value = 5;
+        }
+
+        this.posX = randomNumber(5) * STEP_X;
+        this.posY = randomNumber(3) * STEP_Y + 50;
+    }
+
+    hide(){
+        this.posX = 6 * STEP_X;
+    }
+
+    render(){
+        ctx.drawImage(Resources.get(this.sprite), this.posX, this.posY);
+    }
+}
+
+function createPlayer(sprite){
+    player.sprite = sprite;
+}
+
 function createEnemies(num){
     for(let i = 0; i < num; i++){
         allEnemies.push(new Enemy);
     }
-}
-
-function increaseEnemyLevel(){
-    allEnemies.forEach(function(enemy){
-        enemy.level += 50;        
-    });
 }
 
 function resetEnemies(){
@@ -154,16 +175,13 @@ function resetEnemies(){
     });
 }
 
-function createPlayer(sprite){
-    player.sprite = sprite;
-}
-
 function randomNumber(num){
     return Math.floor((Math.random() * 100) % num);
 }
 
-let selector = new Selector;
-let player = new Player;
+const selector = new Selector;
+const player = new Player;
+const gem = new Gem;
 const allEnemies = [];
 createEnemies(3,1);
 
