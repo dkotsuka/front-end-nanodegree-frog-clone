@@ -25,18 +25,24 @@ class Selector {
             default: 
         }
     }
-    render(){
+    render(ctx){
         ctx.drawImage(Resources.get(this.selectorSprite), this.selected * 101, 2 * 83);
     }
 }
 
 class Enemy {
-    constructor(){      
+    constructor(){    
+        this.level = 1;  
         this.setValues();
-        this.levelUp = false;
     }
 
+    setLevel(lv){
+        this.level = lv;
+    }
+
+    //atualiza a posição do inimigo no canvas.
     update(dt){
+        
         if(this.posX > STEP_X * 7 ||
             this.posX < STEP_X * -3){
             this.setValues();
@@ -44,7 +50,8 @@ class Enemy {
         this.posX += this.speed * dt;
     }
 
-    setValues(){      
+    //insere ou reinsere a inimigo em sua posição inicial.
+    setValues(){
         this.posY = randomNumber(3) * STEP_Y + 50;
         if(this.posY === STEP_Y + 50 ){
             this.sprite = 'images/enemy-bug-l.png';
@@ -55,10 +62,10 @@ class Enemy {
             this.posX = -2 * STEP_X;
             this.direction = 1;
         }        
-        this.speed = (player.level * 100 + randomNumber(100)) * this.direction;
+        this.speed = (this.level * 100 + randomNumber(100)) * this.direction;
     }
     
-    render(){
+    render(ctx){
         ctx.drawImage(Resources.get(this.sprite), this.posX, this.posY);
     }
 }
@@ -69,6 +76,7 @@ class Player{
         this.level = 1;
     }
 
+    //Coloca o jogador em sua posição inicial no canvas.
     toStartPos(){
         this.x = 2;
         this.y = 5;
@@ -81,18 +89,20 @@ class Player{
         this.toStartPos();
     }
 
+    //Atualiza a posição do jogador
     update(){
         this.posX = STEP_X * this.x;
         this.posY = STEP_Y * this.y - 33;
     }
 
+    //Contabiliza os danos recebidos pelo jogador.
     gotHit(){
         if(this.hp > 0){
             this.hp -= 1; 
         }
     }
 
-    render(){
+    render(ctx){
         ctx.drawImage(Resources.get(this.sprite), this.posX, this.posY);
     }
 
@@ -112,8 +122,12 @@ class Player{
                 if(this.y >= 1 ){
                     this.y -= 1;
                 } else {
+                    /*Caso o jogador atinja a parte superior do mapa, aumenta-se um ponto.
+                    A cada 20 pontos o level do jogador é aumentado, 
+                    o que reflete na velocidade dos inimigos.*/
                     this.score +=1;
                     this.level = 1 + Math.floor(this.score / 20);
+                    setEnemiesLevel(this.level);
                     this.toStartPos();
                     gem.setValues();
                 }
@@ -133,12 +147,13 @@ class Gem {
     constructor(){
         this.setValues();
     }
+
     setValues(){
         const rand = randomNumber(100);
-        if(rand < 50){
+        if(rand < 70){
             this.sprite = 'images/gem-blue.png';
             this.value = 1;
-        } else if(rand > 90) {
+        } else if(rand > 98) {
             this.sprite = 'images/gem-orange.png';
             this.value = 10;
         } else {
@@ -154,7 +169,7 @@ class Gem {
         this.posX = 6 * STEP_X;
     }
 
-    render(){
+    render(ctx){
         ctx.drawImage(Resources.get(this.sprite), this.posX, this.posY);
     }
 }
@@ -169,9 +184,15 @@ function createEnemies(num){
     }
 }
 
+function setEnemiesLevel(lv){
+    allEnemies.forEach(function(enemy){
+        enemy.setLevel(lv);
+    });
+}
+
 function resetEnemies(){
     allEnemies.forEach(function(enemy){
-        enemy.level = 100;
+        enemy.setLevel(1);
     });
 }
 
@@ -183,7 +204,7 @@ const selector = new Selector;
 const player = new Player;
 const gem = new Gem;
 const allEnemies = [];
-createEnemies(3,1);
+createEnemies(3);
 
 document.addEventListener('keyup', function(e) {
     const allowedKeys = {

@@ -62,7 +62,7 @@ const Engine = (function(global) {
             ctx.fillStyle = gradient;
             ctx.fillRect(0,50,canvas.width,canvas.height-100);
 
-            selector.render();
+            selector.render(ctx);
     
             heroSprite.forEach((sprite, index) => {
                 ctx.drawImage(Resources.get(sprite), index * 101, 2 * 83);
@@ -194,11 +194,11 @@ const Engine = (function(global) {
     }
 
     function renderEntities() {
-        gem.render();
+        gem.render(ctx);
         allEnemies.forEach(function(enemy) {
-            enemy.render();
+            enemy.render(ctx);
         });
-        player.render();
+        player.render(ctx);
         renderGameStatus();
     }
 
@@ -228,5 +228,4 @@ const Engine = (function(global) {
         
     ]);
     Resources.onReady(chooseHero);
-    global.ctx = ctx;
 })(this);
