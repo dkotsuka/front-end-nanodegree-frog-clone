@@ -3,6 +3,8 @@
 ### SINOPSE
 Num final de semana muito quente, nossos amigos estão querendo se refrescar um pouco, mas muitas joaninhas apressadas estão dificultando o caminho até a margem da lagoa. Você pode ajudá-los?
 
+Para jogar, click [AQUI.](https://dkotsuka.github.io/front-end-nanodegree-frog-clone/)
+
 ### INSTRUÇÕES DE JOGO:
 
 Tela de seleção de personagem:
